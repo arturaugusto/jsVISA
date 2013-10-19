@@ -1,0 +1,86 @@
+<html>
+	<head>
+		<title>jsVISA example</title>
+		<style>
+			label{display:inline-block;}
+			input{display:block;}
+		</style>
+		<script src="jsvisa.js"></script>
+		<script language="javascript" type="text/javascript">
+
+			function writeToTextArea(text){
+				document.getElementById("read_from_instrument").disabled = false;
+				document.getElementById("ask_instrument").disabled = false;
+				document.getElementById("output").value+=text + "\n";
+			}
+
+			function connectToInstrument(){
+				window.visa.getInstrument(document.getElementById("instrument_visa_address").value, function(instrument){
+					window.instrument = instrument;
+					document.getElementById("connect_to_server").disabled = true;
+					document.getElementById("disconnect_from_server").disabled = false;
+					document.getElementById("write_to_instrument").disabled = false;
+					document.getElementById("read_from_instrument").disabled = false;
+					document.getElementById("ask_instrument").disabled = false;
+					document.getElementById("change_instrument").disabled = false;
+				})
+			}
+
+			function connectToServer(){
+				window.visa = new Visa(document.getElementById("server_address").value ,function(_visa){
+					connectToInstrument();
+				})
+			}
+
+			function disconnectFromServer(){
+				visa.close();
+				document.getElementById("connect_to_server").disabled = false;
+				document.getElementById("disconnect_from_server").disabled = true;
+				document.getElementById("write_to_instrument").disabled = true;
+				document.getElementById("read_from_instrument").disabled = true;
+				document.getElementById("ask_instrument").disabled = true;
+				document.getElementById("change_instrument").disabled = true;
+
+
+			}
+
+			function writeToInstrument(){
+				instrument.write(document.getElementById("command").value);
+			}
+
+			function readInstrument(){
+				document.getElementById("read_from_instrument").disabled = true;
+				document.getElementById("ask_instrument").disabled = true;
+				instrument.read(writeToTextArea);
+			}
+
+			function askInstrument(){
+				document.getElementById("read_from_instrument").disabled = true;
+				document.getElementById("ask_instrument").disabled = true;
+				instrument.ask(document.getElementById("command").value, writeToTextArea);
+			}
+
+
+		</script>
+	</head>
+	<body>
+		<h3>jsVISA read/write sample</h3>
+		<label for="server_address">Server Address:</label>
+		<input type="text" id="server_address" value="ws://localhost:8000/">
+		<label for="instrument_visa_address">Instrument VISA Address:</label>
+		<input type="text" id="instrument_visa_address" value="GPIB0::4::INSTR">
+		<button type="button" id="connect_to_server" onclick="connectToServer();">Connect</button><br>
+		<button type="button" id="disconnect_from_server" onclick="disconnectFromServer();" disabled="disabled">Disconnect</button><br>
+		<button type="button" id="change_instrument" onclick="connectToInstrument();" disabled="disabled">Change Instrument</button><br>
+		<hr>
+
+		<label for="command">Command:</label>
+		<input type="text" id="command" value="*IDN?">
+
+		<button type="button" id="write_to_instrument" disabled="disabled">Write</button>
+		<button type="button" id="read_from_instrument" disabled="disabled" onclick="readInstrument();">Read</button>
+		<button type="button" id="ask_instrument" disabled="disabled" onclick="askInstrument();">Ask</button><br>
+		<textarea rows="20" cols="50" id="output"></textarea>
+	</body>
+</html> 
+
