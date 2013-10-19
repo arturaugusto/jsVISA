@@ -1,3 +1,9 @@
+// jsVISA.js 1.0
+// (c) 2013 Artur Augusto Martins 
+// jsVISA.js is freely distributable under the MIT license.
+// For all details and documentation:
+// https://github.com/arturaugusto/jsVISA 
+
 (function() {
 	var Visa = function(server, cb) {
 		// Store callback functions
