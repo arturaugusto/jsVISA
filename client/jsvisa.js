@@ -1,5 +1,5 @@
-// jsVISA.js 1.0
-// (c) 2013 Artur Augusto Martins 
+// jsVISA.js 1.1
+// (c) 2014 Artur Augusto Martins 
 // jsVISA.js is freely distributable under the MIT license.
 // For all details and documentation:
 // https://github.com/arturaugusto/jsVISA 
@@ -14,42 +14,49 @@
 		// Create websocket
 		var websocket = new WebSocket(server);
 		this.websocket = websocket;
-		that = this;
+		var visa = this;
 		this.websocket.onopen = function(evt) { 
-			cb(that);
+			cb(visa);
 		};
 		this.websocket.onmessage = function(evt) { 
 			// Call requested callback function
 			var returned_msg = JSON.parse(evt.data);
 			var key = returned_msg["key"];
-			key_callback_pairs[key](returned_msg.read);
+			try
+				{
+				key_callback_pairs[key](returned_msg.read);
+				}
+			catch(err)
+				{
+				console.log("Error executing read callback. Error: " + err);
+				}
 			delete key_callback_pairs[key];
 		};
 		// To implement
 		//this.websocket.onclose = function(evt) { onClose(evt) };
 		this.websocket.onerror = function(evt) {
 			alert("WebSocket Error.");
-			that.close();
+			visa.close();
 		};
 		Visa.Instrument = function(options){
 			var addr = options.addr;
 			var term_chars = options.term_chars;
 			var timeout = options.timeout;
 			var msg = {action: "connect", addr: addr, term_chars: term_chars, timeout: timeout};
-			that.websocket.send(JSON.stringify(msg));
+			visa.websocket.send(JSON.stringify(msg));
 			inst = this;
 			// Write to instrument
 			this.write = function(cmd){
 				var msg = {action: "write", addr: addr, cmd: cmd}
-				that.websocket.send(JSON.stringify(msg));
+				visa.websocket.send(JSON.stringify(msg));
 			}
 			// Read from instrument async
 			this.read = function(cb){
 				// Create new random key for each read
 				var key = Math.random().toString(36).substring(7);
-				that.key_callback_pairs[key] = cb;
+				visa.key_callback_pairs[key] = cb;
 				var msg = {action: "read", key: key, addr: addr}
-				that.websocket.send(JSON.stringify(msg));
+				visa.websocket.send(JSON.stringify(msg));
 			}
 			// Write + Read
 			this.ask = function(cmd, cb){
@@ -65,7 +72,7 @@
 		}
 		//Close Websocket
 		this.close = function(){
-			that.websocket.close();
+			visa.websocket.close();
 		}
 	}
 	window.Visa = Visa;
